@@ -1,7 +1,9 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { useEffect } from 'react';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, usePathname } from 'expo-router';
+import { useEffect, useRef } from 'react';
 import { useColorScheme } from 'react-native';
 
+import { initAnalytics, track } from '@/analytics';
+import { screenName } from '@/analytics/events';
 import { sweepTempDir } from '@/audio/cleanup';
 import { audioDir, expoFileOps } from '@/audio/expoFileOps';
 import { ChallengeProvider } from '@/game/ChallengeProvider';
@@ -15,6 +17,28 @@ const handOverOptions = {
 
 export default function RootLayout() {
   const scheme = useColorScheme();
+  const pathname = usePathname();
+  const currentPath = useRef(pathname);
+
+  useEffect(() => {
+    currentPath.current = pathname;
+  }, [pathname]);
+
+  // Analytics (no-op without a key) and a JS error hook that reports only an
+  // opaque code and the screen name — never the error message, which can hold paths.
+  useEffect(() => {
+    initAnalytics();
+    const previous = ErrorUtils.getGlobalHandler();
+    ErrorUtils.setGlobalHandler((error, isFatal) => {
+      track({
+        name: 'app_error',
+        error_code: isFatal ? 'js_fatal' : 'js_unhandled',
+        screen: screenName(currentPath.current),
+      });
+      previous(error, isFatal);
+    });
+    return () => ErrorUtils.setGlobalHandler(previous);
+  }, []);
 
   useEffect(() => {
     // Delete recordings left behind by a crash or a killed app.

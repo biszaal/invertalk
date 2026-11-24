@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { track } from '@/analytics';
 import { deleteFileQuietly } from '@/audio/deleteFileQuietly';
 import { ensureMicPermission } from '@/audio/permissions';
 import type { InterruptReason } from '@/audio/recordingRules';
@@ -28,7 +29,7 @@ const INTERRUPTED: Record<InterruptReason, string> = {
 };
 
 /** Record/stop control shared by Player 1 and Player 2. One take at a time. */
-export function RecordTake({ targetUri, onRecorded }: Props) {
+export function RecordTake({ role, targetUri, onRecorded }: Props) {
   const [message, setMessage] = useState<Message | null>(null);
   const [busy, setBusy] = useState(false);
   const handoff = useRef<{ timer: ReturnType<typeof setTimeout>; uri: string } | null>(null);
@@ -36,6 +37,14 @@ export function RecordTake({ targetUri, onRecorded }: Props) {
   const recorder = useWavRecorder({
     onFinished: (r) => {
       if (r.kind === 'ok') {
+        track({
+          name: 'recording_completed',
+          role,
+          duration_ms: r.durationMs,
+          sample_rate: r.sampleRate,
+          channels: r.channels,
+          encoding: r.encoding === 'int16' || r.encoding === 'float32' ? r.encoding : 'other',
+        });
         if (r.hitMax) {
           setMessage({ tone: 'info', text: `Stopped at ${MAX_RECORDING_MS / 1000} seconds.` });
           handoff.current = {
@@ -52,6 +61,7 @@ export function RecordTake({ targetUri, onRecorded }: Props) {
       } else if (r.kind === 'too_short') {
         setMessage({ tone: 'error', text: 'That was too short. Hold on a little longer and try again.' });
       } else {
+        track({ name: 'recording_interrupted', role, reason: r.reason });
         setMessage({ tone: 'error', text: INTERRUPTED[r.reason], retry: true });
       }
     },
@@ -75,6 +85,7 @@ export function RecordTake({ targetUri, onRecorded }: Props) {
     setBusy(true);
     try {
       const mic = await ensureMicPermission();
+      if (mic.prompted) track({ name: 'permission_result', status: mic.status });
       if (mic.status === 'denied') {
         setMessage(null);
         router.push('/permission-denied');

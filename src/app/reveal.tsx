@@ -2,6 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, Text, View } from 'react-native';
 
+import { track } from '@/analytics';
 import { useChallenge } from '@/game/ChallengeProvider';
 import { useReversal } from '@/game/useReversal';
 import { canShare, shareReveal } from '@/share/shareReveal';
@@ -11,6 +12,9 @@ import { Notice } from '@/ui/Notice';
 import { PlayButton } from '@/ui/PlayButton';
 import { Screen } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
+
+/** challenge_finished fires once per game, not again after Retry imitation. */
+let finishedSession: string | null = null;
 
 /** Player 2's attempt flipped forwards, with comparisons and the phrase behind a tap. */
 export default function RevealScreen() {
@@ -24,6 +28,13 @@ export default function RevealScreen() {
   useEffect(() => {
     void canShare().then(setShareable);
   }, []);
+
+  const { sessionId, startedAt } = state;
+  useEffect(() => {
+    if (reversal.status !== 'ready' || !sessionId || finishedSession === sessionId) return;
+    finishedSession = sessionId;
+    track({ name: 'challenge_finished', total_duration_ms: startedAt ? Date.now() - startedAt : Number.NaN });
+  }, [reversal.status, sessionId, startedAt]);
 
   const retry = useCallback(() => {
     retryImitation();
@@ -45,8 +56,11 @@ export default function RevealScreen() {
 
   const onShare = async (uri: string) => {
     setShareFailed(false);
+    track({ name: 'share_clicked', share_type: 'audio' });
     // Files stay until the session ends, so sharing again still works.
-    setShareFailed((await shareReveal(uri)) === 'failed');
+    const result = await shareReveal(uri);
+    track({ name: 'share_completed', share_type: 'audio', success: result === 'closed' });
+    setShareFailed(result === 'failed');
   };
 
   const newPhrase = () => {

@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 
+import { track } from '@/analytics';
 import { PRIVACY_POLICY_URL } from '@/config';
 import type { ConsentRecord } from '@/game/consent';
 import { acceptConsent, readConsent } from '@/game/consentStore';
@@ -25,9 +26,11 @@ export default function ConsentScreen() {
 
   useEffect(() => {
     if (review) void readConsent().then(setRecord);
+    else track({ name: 'consent_shown' });
   }, [review]);
 
   const onAgree = async () => {
+    track({ name: 'consent_accepted' });
     try {
       await acceptConsent(new Date());
     } catch {
@@ -36,7 +39,10 @@ export default function ConsentScreen() {
     router.replace('/phrase');
   };
 
-  const onDecline = () => router.dismissTo({ pathname: '/', params: { notice: 'consent_declined' } });
+  const onDecline = () => {
+    track({ name: 'consent_declined' });
+    router.dismissTo({ pathname: '/', params: { notice: 'consent_declined' } });
+  };
 
   return (
     <Screen title="Before you record">

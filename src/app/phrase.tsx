@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { track } from '@/analytics';
 import { CUSTOM_PHRASE_MAX } from '@/config';
 import { useChallenge } from '@/game/ChallengeProvider';
 import { checkCustomPhrase, STARTER_PHRASES, type Phrase } from '@/game/phrases';
@@ -27,6 +28,11 @@ export default function PhraseScreen() {
 
   const onContinue = () => {
     if (!phrase) return;
+    track(
+      phrase.source === 'preset'
+        ? { name: 'challenge_started', phrase_source: 'preset', phrase_id: phrase.id }
+        : { name: 'challenge_started', phrase_source: 'custom' }
+    );
     start(phrase);
     router.push('/record');
   };

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { track } from '@/analytics';
 import { ReverseError, reverseWavFile } from '@/audio/reverseFile';
 
 import type { Role } from './challenge';
@@ -26,9 +27,17 @@ export function useReversal(role: Role): ReversalState {
   useEffect(() => {
     if (!rawUri || !needsReversal || startedFor.current === rawUri) return;
     startedFor.current = rawUri;
+    const startedAt = Date.now();
     reverseWavFile(rawUri, fileUri(role, 'rev'))
-      .then((out) => reversed(role, rawUri, out.uri))
-      .catch((e: unknown) => setFailure({ rawUri, code: e instanceof ReverseError ? e.code : 'unexpected' }));
+      .then((out) => {
+        track({ name: 'reversal_completed', role, success: true, duration_ms: out.elapsedMs });
+        reversed(role, rawUri, out.uri);
+      })
+      .catch((e: unknown) => {
+        const code = e instanceof ReverseError ? e.code : 'unexpected';
+        track({ name: 'reversal_completed', role, success: false, duration_ms: Date.now() - startedAt, error_code: code });
+        setFailure({ rawUri, code });
+      });
   }, [rawUri, needsReversal, fileUri, reversed, role]);
 
   if (!take) return { status: 'missing' };
