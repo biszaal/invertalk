@@ -6,6 +6,7 @@ import { PRIVACY_POLICY_URL } from '@/config';
 import type { ConsentRecord } from '@/game/consent';
 import { acceptConsent, readConsent } from '@/game/consentStore';
 import { Button } from '@/ui/Button';
+import { formatDate } from '@/ui/formatDate';
 import { Screen } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
 
@@ -53,11 +54,7 @@ export default function ConsentScreen() {
           {record !== undefined && (
             <Text style={[styles.text, { color: t.muted }]}>
               {record
-                ? `You agreed on ${new Date(record.acceptedAt).toLocaleDateString(undefined, {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}.`
+                ? `You agreed on ${formatDate(record.acceptedAt)}.`
                 : "You haven't agreed yet."}
             </Text>
           )}

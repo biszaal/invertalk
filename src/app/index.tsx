@@ -43,6 +43,7 @@ export default function Home() {
         <Notice text="Recording needs your OK first. Tap Start when you're ready to agree." />
       )}
       <Button label="Start challenge" onPress={onStart} />
+      <Button label="Settings" variant="secondary" onPress={() => router.push('/settings')} />
       {__DEV__ && (
         <Link href="/dev-audio" style={[styles.devLink, { color: t.accent }]}>
           Audio test (dev)
