@@ -5,6 +5,7 @@ import { Alert, BackHandler, StyleSheet, Text } from 'react-native';
 import { useChallenge } from '@/game/ChallengeProvider';
 import { useReversal } from '@/game/useReversal';
 import { Button } from '@/ui/Button';
+import { failureText } from '@/ui/failureText';
 import { Notice } from '@/ui/Notice';
 import { PlayButton } from '@/ui/PlayButton';
 import { Screen } from '@/ui/Screen';
@@ -46,7 +47,7 @@ export default function PromptScreen() {
       {reversal.status === 'preparing' && <Notice text="Flipping it backwards…" />}
       {reversal.status === 'failed' && (
         <>
-          <Notice tone="error" text="Couldn't play that recording backwards. Please record it again." />
+          <Notice tone="error" text={failureText(reversal.code, "Couldn't play that recording backwards. Please record it again.")} />
           <Button label="Record again" onPress={backToPhrase} />
         </>
       )}

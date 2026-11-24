@@ -1,11 +1,12 @@
 import { useAudioStream } from 'expo-audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import { MAX_RECORDING_MS } from '@/config';
 
 import { setRecordingAudioMode } from './audioMode';
 import { deleteFileQuietly } from './deleteFileQuietly';
-import { classifyTake, type InterruptReason } from './recordingRules';
+import { classifyTake, interruptionFor, type AppStateLike, type InterruptReason } from './recordingRules';
 
 export type TakeResult =
   | {
@@ -45,7 +46,7 @@ export function useWavRecorder({
   channels = 1,
   encoding = 'int16',
 }: WavRecorderOptions) {
-  const { stream } = useAudioStream({ sampleRate, channels, encoding });
+  const { stream, isStreaming } = useAudioStream({ sampleRate, channels, encoding });
   const [isRecording, setIsRecording] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
 
@@ -138,6 +139,10 @@ export function useWavRecorder({
           phase.current = 'idle';
           return;
         }
+        if (AppState.currentState === 'background') {
+          fail('background'); // the app left while the mic was starting
+          return;
+        }
         phase.current = 'recording';
         startedAt.current = Date.now();
         setIsRecording(true);
@@ -162,6 +167,23 @@ export function useWavRecorder({
     deleteFileQuietly(fileUri.current);
     settle(null);
   }, [settle, stopStreamQuietly]);
+
+  // Interruptions: the app leaving the foreground, or the stream stopping by
+  // itself (a call or another app taking the mic). The take is always discarded.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next) => {
+      if (phase.current !== 'recording') return;
+      const reason = interruptionFor(next, true);
+      if (reason) fail(reason);
+    });
+    return () => sub.remove();
+  }, [fail]);
+
+  useEffect(() => {
+    if (phase.current !== 'recording' || isStreaming) return;
+    const reason = interruptionFor((AppState.currentState ?? 'active') as AppStateLike, false);
+    if (reason) fail(reason);
+  }, [isStreaming, fail]);
 
   useEffect(() => {
     mounted.current = true;

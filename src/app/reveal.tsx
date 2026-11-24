@@ -6,6 +6,7 @@ import { useChallenge } from '@/game/ChallengeProvider';
 import { useReversal } from '@/game/useReversal';
 import { canShare, shareReveal } from '@/share/shareReveal';
 import { Button } from '@/ui/Button';
+import { failureText } from '@/ui/failureText';
 import { Notice } from '@/ui/Notice';
 import { PlayButton } from '@/ui/PlayButton';
 import { Screen } from '@/ui/Screen';
@@ -58,7 +59,7 @@ export default function RevealScreen() {
       {reversal.status === 'preparing' && <Notice text="Flipping your try…" />}
       {reversal.status === 'failed' && (
         <>
-          <Notice tone="error" text="Couldn't flip that recording. Please record it again." />
+          <Notice tone="error" text={failureText(reversal.code, "Couldn't flip that recording. Please record it again.")} />
           <Button label="Try again" onPress={retry} />
         </>
       )}
