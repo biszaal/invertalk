@@ -5,7 +5,7 @@ Date: 24 Nov 2026 · Status: approved approach, plan in `docs/superpowers/plans/
 ## Sources of truth
 
 1. Notion: **Reverse Audio Challenge — Game Design & Build Plan** (wins on any conflict)
-2. `CLAUDE_HANDOFF.md` in this folder (same content, phased into five prompts)
+2. The handoff (same content, phased into five prompts): Notion page "Invertalk — Claude Code Handoff". The repo copy `CLAUDE_HANDOFF.md` was removed on 25 Nov 2026 after the MVP was built; it remains in git history.
 3. Notion: Reverse Audio | MVP Technical Specification (older; build plan overrides it)
 
 This note does not restate those documents. It records the approach we chose, the facts checked against the real packages on 24 Nov, and the small calls made where the documents leave room.

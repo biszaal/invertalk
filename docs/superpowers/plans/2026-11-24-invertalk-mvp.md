@@ -8,7 +8,7 @@
 
 **Tech Stack:** Expo SDK 58 (`expo@~58.0.26`, RN 0.88.1, React 19.3, TS 6.0), expo-router, expo-audio ~58.0.12, expo-file-system ~58.0.14, expo-sharing ~58.0.23, expo-dev-client, expo-constants, Jest 30 + jest-expo ~58.0.15, EAS Build, posthog-react-native 4.x (Phase 5).
 
-**Spec:** `docs/superpowers/specs/2026-11-24-invertalk-design.md`, which defers to the Notion page "Reverse Audio Challenge — Game Design & Build Plan" and `CLAUDE_HANDOFF.md`. Read the handoff's **Hard rules**, **Screens and flow** and **Analytics** sections before any task.
+**Spec:** `docs/superpowers/specs/2026-11-24-invertalk-design.md`, which defers to the Notion page "Reverse Audio Challenge — Game Design & Build Plan" and the handoff (Notion page "Invertalk — Claude Code Handoff"; the repo copy `CLAUDE_HANDOFF.md` was removed after the build and is in git history). Read the handoff's **Hard rules**, **Screens and flow** and **Analytics** sections before any task.
 
 **Working directory:** `/Users/bishalaryal/Documents/Github/invertalk` (the app lives at the root, beside `CLAUDE_HANDOFF.md`).
 
