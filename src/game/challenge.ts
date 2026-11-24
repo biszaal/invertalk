@@ -19,7 +19,8 @@ export type ChallengeState = {
 export type ChallengeAction =
   | { type: 'start'; sessionId: string; phrase: Phrase; now: number }
   | { type: 'recorded'; role: Role; rawUri: string; durationMs: number }
-  | { type: 'reversed'; role: Role; revUri: string }
+  /** `rawUri` names the take that was reversed; a stale result (take gone or replaced) is dropped. */
+  | { type: 'reversed'; role: Role; rawUri: string; revUri: string }
   | { type: 'rerecordPrompt' }
   | { type: 'retryImitation' }
   | { type: 'reset' };
@@ -42,7 +43,7 @@ export function challengeReducer(s: ChallengeState, a: ChallengeAction): Challen
       return { ...s, [a.role]: { rawUri: a.rawUri, revUri: null, durationMs: a.durationMs } };
     case 'reversed': {
       const take = s[a.role];
-      return take ? { ...s, [a.role]: { ...take, revUri: a.revUri } } : s;
+      return take?.rawUri === a.rawUri ? { ...s, [a.role]: { ...take, revUri: a.revUri } } : s;
     }
     case 'rerecordPrompt':
       return {
@@ -71,8 +72,9 @@ export function releasedUris(s: ChallengeState, a: ChallengeAction): string[] {
     case 'recorded':
       return uris(s[a.role]).filter((u) => u !== a.rawUri);
     case 'reversed': {
-      const old = s[a.role]?.revUri;
-      return old && old !== a.revUri ? [old] : [];
+      const take = s[a.role];
+      if (take?.rawUri !== a.rawUri) return [a.revUri]; // stale: nobody will use this file
+      return take.revUri && take.revUri !== a.revUri ? [take.revUri] : [];
     }
   }
 }

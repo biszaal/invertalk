@@ -15,9 +15,19 @@ function run(...actions: ChallengeAction[]): ChallengeState {
 
 const start: ChallengeAction = { type: 'start', sessionId: 's1', phrase, now: 1000 };
 const promptRaw: ChallengeAction = { type: 'recorded', role: 'prompt', rawUri: 'file:///p-raw.wav', durationMs: 1500 };
-const promptRev: ChallengeAction = { type: 'reversed', role: 'prompt', revUri: 'file:///p-rev.wav' };
+const promptRev: ChallengeAction = {
+  type: 'reversed',
+  role: 'prompt',
+  rawUri: 'file:///p-raw.wav',
+  revUri: 'file:///p-rev.wav',
+};
 const imitRaw: ChallengeAction = { type: 'recorded', role: 'imitation', rawUri: 'file:///i-raw.wav', durationMs: 1700 };
-const imitRev: ChallengeAction = { type: 'reversed', role: 'imitation', revUri: 'file:///i-rev.wav' };
+const imitRev: ChallengeAction = {
+  type: 'reversed',
+  role: 'imitation',
+  rawUri: 'file:///i-raw.wav',
+  revUri: 'file:///i-rev.wav',
+};
 const full = () => run(start, promptRaw, promptRev, imitRaw, imitRev);
 
 test('start opens a session with take 1 for both roles', () => {
@@ -95,4 +105,18 @@ test('retake file names never repeat', () => {
   const promptBefore = takeFileName(s, 'prompt', 'raw');
   expect(takeFileName(challengeReducer(s, { type: 'rerecordPrompt' }), 'prompt', 'raw')).not.toBe(promptBefore);
   expect(takeFileName(s, 'prompt', 'rev')).toBe('invertalk-s1-prompt-1-rev.wav');
+});
+
+test('a reversal that finishes after its take is gone is ignored and its file released', () => {
+  const before = run(start, promptRaw, { type: 'rerecordPrompt' });
+  const late: ChallengeAction = { type: 'reversed', role: 'prompt', rawUri: 'file:///p-raw.wav', revUri: 'file:///p-rev.wav' };
+  expect(challengeReducer(before, late)).toEqual(before);
+  expect(releasedUris(before, late)).toEqual(['file:///p-rev.wav']);
+});
+
+test('a reversal for an older take does not attach to the newer one', () => {
+  const before = run(start, promptRaw, { type: 'recorded', role: 'prompt', rawUri: 'file:///p-raw-2.wav', durationMs: 800 });
+  const late: ChallengeAction = { type: 'reversed', role: 'prompt', rawUri: 'file:///p-raw.wav', revUri: 'file:///p-rev.wav' };
+  expect(challengeReducer(before, late).prompt?.revUri).toBeNull();
+  expect(releasedUris(before, late)).toEqual(['file:///p-rev.wav']);
 });

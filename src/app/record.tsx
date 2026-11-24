@@ -1,4 +1,4 @@
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useChallenge } from '@/game/ChallengeProvider';
@@ -10,7 +10,8 @@ import { useTheme } from '@/ui/theme';
 export default function RecordScreen() {
   const t = useTheme();
   const { state, fileUri, recorded } = useChallenge();
-  if (!state.sessionId || !state.phrase) return <Redirect href="/" />;
+  // No session (e.g. the game was just ended from the header ×): render nothing while the stack unwinds.
+  if (!state.sessionId || !state.phrase) return null;
 
   return (
     <Screen title="Player 1">

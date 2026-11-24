@@ -21,7 +21,7 @@ export type ChallengeApi = {
   start(phrase: Phrase): void;
   fileUri(role: Role, kind: 'raw' | 'rev'): string;
   recorded(role: Role, rawUri: string, durationMs: number): void;
-  reversed(role: Role, revUri: string): void;
+  reversed(role: Role, rawUri: string, revUri: string): void;
   rerecordPrompt(): void;
   retryImitation(): void;
   endSession(): void;
@@ -53,7 +53,7 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
       fileUri,
       start: (phrase) => apply({ type: 'start', sessionId: newSessionId(), phrase, now: Date.now() }),
       recorded: (role, rawUri, durationMs) => apply({ type: 'recorded', role, rawUri, durationMs }),
-      reversed: (role, revUri) => apply({ type: 'reversed', role, revUri }),
+      reversed: (role, rawUri, revUri) => apply({ type: 'reversed', role, rawUri, revUri }),
       rerecordPrompt: () => apply({ type: 'rerecordPrompt' }),
       retryImitation: () => apply({ type: 'retryImitation' }),
       endSession: () => {
