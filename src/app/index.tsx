@@ -1,4 +1,4 @@
-import { Link, router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -44,11 +44,6 @@ export default function Home() {
       )}
       <Button label="Start challenge" onPress={onStart} />
       <Button label="Settings" variant="secondary" onPress={() => router.push('/settings')} />
-      {__DEV__ && (
-        <Link href="/dev-audio" style={[styles.devLink, { color: t.accent }]}>
-          Audio test (dev)
-        </Link>
-      )}
     </Screen>
   );
 }
@@ -57,5 +52,4 @@ const styles = StyleSheet.create({
   hero: { flexGrow: 1, justifyContent: 'center', gap: 12, paddingVertical: 32 },
   title: { fontSize: 40, fontWeight: '800' },
   body: { fontSize: 18, lineHeight: 26 },
-  devLink: { fontSize: 15, padding: 12, textAlign: 'center' },
 });
