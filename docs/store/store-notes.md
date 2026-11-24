@@ -4,7 +4,7 @@ Prepared 2026-11-25 from the shipped code (branch `mvp`). Submission is a manual
 
 ## Blockers before any submit
 
-- [ ] **Privacy policy URL.** `src/config.ts` still has the placeholder (`PRIVACY_POLICY_IS_PLACEHOLDER = true`). Host the policy, set the URL, set the flag to `false`, and put the same URL in both store listings.
+- [ ] **Privacy policy URL.** Draft text: `docs/legal/privacy-policy.md` (fill its placeholders, host it). `src/config.ts` still has the placeholder (`PRIVACY_POLICY_IS_PLACEHOLDER = true`). Host the policy, set the URL, set the flag to `false`, and put the same URL in both store listings.
 - [ ] **PostHog key.** Add `EXPO_PUBLIC_POSTHOG_KEY` to EAS (`eas env:create --name EXPO_PUBLIC_POSTHOG_KEY --environment preview --environment production`). Without it, the app sends no analytics; the answers below then overstate collection (allowed, but not ideal).
 - [ ] **PostHog project settings:** turn on *Discard client IP data*, and leave session replay off at project level too. The app already disables GeoIP lookups.
 - [x] **Dev audio screen removed** after QA (Checkpoint 5 passed). The launch sweep still deletes any `dev` temp files left by earlier QA builds.
@@ -12,7 +12,7 @@ Prepared 2026-11-25 from the shipped code (branch `mvp`). Submission is a manual
 - [x] **App icon and splash.** Replaced with the Invertalk mark (concept D, `docs/brand/`); template Expo art removed.
 - [ ] **Xcode image.** All iOS profiles pin `macos-tahoe-26.6-xcode-27.1` (Xcode 27.1 RC, the image EAS tags `sdk-58`). Apple normally accepts RC builds; if App Store Connect rejects it, switch to a stable 27.x image from the EAS infrastructure page.
 - [ ] **Starter phrases** confirmed (or swapped) — `src/game/phrases.ts`.
-- [ ] **Store listing copy** written.
+- [ ] **Store listing copy.** Draft: `docs/store/listing.md` (fill its placeholders).
 
 ## Microphone usage string (iOS `NSMicrophoneUsageDescription`)
 
