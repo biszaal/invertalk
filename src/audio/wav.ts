@@ -75,6 +75,34 @@ export function parseWav(bytes: Uint8Array): ParsedWav {
   };
 }
 
+/**
+ * Writes a canonical WAV: 44-byte header, 16-byte `fmt ` (tag 1 for int16,
+ * tag 3 for float32 — extensible input is written plain), then `data`.
+ */
+export function writeWav(format: WavFormat, data: Uint8Array): Uint8Array {
+  const out = new Uint8Array(44 + data.length);
+  const view = new DataView(out.buffer);
+  writeId(out, 0, 'RIFF');
+  view.setUint32(4, 36 + data.length, true);
+  writeId(out, 8, 'WAVE');
+  writeId(out, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format.encoding === 'int16' ? TAG_PCM : TAG_FLOAT, true);
+  view.setUint16(22, format.channels, true);
+  view.setUint32(24, format.sampleRate, true);
+  view.setUint32(28, format.sampleRate * format.blockAlign, true);
+  view.setUint16(32, format.blockAlign, true);
+  view.setUint16(34, format.bitsPerSample, true);
+  writeId(out, 36, 'data');
+  view.setUint32(40, data.length, true);
+  out.set(data, 44);
+  return out;
+}
+
+function writeId(bytes: Uint8Array, offset: number, id: string) {
+  for (let i = 0; i < 4; i++) bytes[offset + i] = id.charCodeAt(i);
+}
+
 function readFormat(view: DataView, body: number, size: number): WavFormat {
   if (size < 16 || body + 16 > view.byteLength) throw new WavError('unsupported_format');
   let tag = view.getUint16(body, true);
