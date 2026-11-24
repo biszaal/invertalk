@@ -1,9 +1,10 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, Text, View } from 'react-native';
 
 import { useChallenge } from '@/game/ChallengeProvider';
 import { useReversal } from '@/game/useReversal';
+import { canShare, shareReveal } from '@/share/shareReveal';
 import { Button } from '@/ui/Button';
 import { Notice } from '@/ui/Notice';
 import { PlayButton } from '@/ui/PlayButton';
@@ -16,6 +17,12 @@ export default function RevealScreen() {
   const { state, retryImitation, endSession } = useChallenge();
   const reversal = useReversal('imitation');
   const [showPhrase, setShowPhrase] = useState(false);
+  const [shareable, setShareable] = useState(false);
+  const [shareFailed, setShareFailed] = useState(false);
+
+  useEffect(() => {
+    void canShare().then(setShareable);
+  }, []);
 
   const retry = useCallback(() => {
     retryImitation();
@@ -34,6 +41,12 @@ export default function RevealScreen() {
   );
 
   if (!state.sessionId || !state.prompt || !state.phrase) return null;
+
+  const onShare = async (uri: string) => {
+    setShareFailed(false);
+    // Files stay until the session ends, so sharing again still works.
+    setShareFailed((await shareReveal(uri)) === 'failed');
+  };
 
   const newPhrase = () => {
     endSession();
@@ -58,6 +71,8 @@ export default function RevealScreen() {
             accessibilityLabel="Play Player 1's original recording"
           />
           <PlayButton uri={state.prompt.revUri} label="Play the backwards prompt" />
+          {shareable && <Button label="Share the reveal" variant="secondary" onPress={() => onShare(reversal.revUri)} />}
+          {shareFailed && <Notice tone="error" text="Couldn't open sharing. Try again." />}
           {showPhrase ? (
             <View accessible style={[styles.card, { backgroundColor: t.surface, borderColor: t.border }]}>
               <Text style={[styles.phrase, { color: t.text }]}>{`It was: “${state.phrase.text}”`}</Text>
