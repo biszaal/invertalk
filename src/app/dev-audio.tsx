@@ -1,15 +1,19 @@
 import { Redirect, Stack } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { resetAudioMode, setRecordingAudioMode } from '@/audio/audioMode';
-import { deleteFileQuietly } from '@/audio/deleteFileQuietly';
+import { deleteUris } from '@/audio/cleanup';
+import { audioDir, audioFileUri, expoFileOps } from '@/audio/expoFileOps';
+import { AUDIO_DIR, newSessionId, tempFileName, type FileKind } from '@/audio/fileNames';
 import { ensureMicPermission } from '@/audio/permissions';
+import { ReverseError, reverseWavFile } from '@/audio/reverseFile';
 import { useWavRecorder, type TakeResult } from '@/audio/useWavRecorder';
 import { MAX_RECORDING_MS } from '@/config';
 import { PlayButton } from '@/ui/PlayButton';
 
 type Format = { sampleRate: 48000 | 44100; channels: 1 | 2; encoding: 'int16' | 'float32' };
+type Step = { uri: string; ms: number } | { error: string };
 
 /** Development-only audio test bench. Removed before any store build (plan Task 20). */
 export default function DevAudioScreen() {
@@ -54,23 +58,44 @@ function DevAudio() {
 }
 
 function Recorder({ format }: { format: Format }) {
+  const [sessionId] = useState(() => newSessionId());
+  const [take, setTake] = useState(0);
   const [result, setResult] = useState<TakeResult | null>(null);
+  const [rev, setRev] = useState<Step | null>(null);
+  const [rev2, setRev2] = useState<Step | null>(null);
   const [permission, setPermission] = useState<string | null>(null);
-  const lastUri = useRef<string | null>(null);
+  const [listing, setListing] = useState<string[]>([]);
+  const owned = useRef<string[]>([]); // every URI this screen created
+
+  const uriFor = (n: number, kind: FileKind) => audioFileUri(tempFileName({ sessionId, role: 'dev', take: n, kind }));
+
+  const refreshListing = useCallback(() => {
+    setListing(expoFileOps.list(audioDir().uri).map((f) => f.name));
+  }, []);
+
   const recorder = useWavRecorder({
     ...format,
     onFinished: (r) => {
-      if (r.kind === 'ok') lastUri.current = r.uri;
       setResult(r);
+      refreshListing();
     },
   });
 
-  useEffect(
-    () => () => {
-      deleteFileQuietly(lastUri.current);
-    },
-    []
-  );
+  useEffect(() => {
+    refreshListing();
+    return () => {
+      deleteUris(expoFileOps, owned.current);
+    };
+  }, [refreshListing]);
+
+  const deleteAll = () => {
+    deleteUris(expoFileOps, owned.current);
+    owned.current = [];
+    setResult(null);
+    setRev(null);
+    setRev2(null);
+    refreshListing();
+  };
 
   const onRecordPress = async () => {
     if (recorder.isRecording) {
@@ -80,13 +105,27 @@ function Recorder({ format }: { format: Format }) {
     const mic = await ensureMicPermission();
     setPermission(`${mic.status}${mic.prompted ? ' (prompted)' : ''}`);
     if (mic.status !== 'granted') return;
-    deleteFileQuietly(lastUri.current); // one take on disk at a time
-    lastUri.current = null;
-    setResult(null);
-    await recorder.start();
+    deleteAll(); // one take on disk at a time
+    const next = take + 1;
+    setTake(next);
+    const raw = uriFor(next, 'raw');
+    owned.current.push(raw, uriFor(next, 'rev'), uriFor(next, 'rev2'));
+    await recorder.start(raw);
+  };
+
+  const reverse = async (src: string, kind: 'rev' | 'rev2', set: (s: Step) => void) => {
+    try {
+      const out = await reverseWavFile(src, uriFor(take, kind));
+      set({ uri: out.uri, ms: out.elapsedMs });
+    } catch (e) {
+      set({ error: e instanceof ReverseError ? e.code : 'unexpected' });
+    }
+    refreshListing();
   };
 
   const seconds = Math.floor(recorder.elapsedMs / 1000);
+  const rawUri = result?.kind === 'ok' ? result.uri : null;
+  const revUri = rev && 'uri' in rev ? rev.uri : null;
 
   return (
     <View style={styles.section}>
@@ -97,13 +136,33 @@ function Recorder({ format }: { format: Format }) {
         style={[styles.record, recorder.isRecording && styles.recording]}>
         <Text style={styles.recordLabel}>{recorder.isRecording ? 'Stop' : 'Record'}</Text>
       </Pressable>
-      <Text style={styles.mono}>
-        {`0:${String(seconds).padStart(2, '0')} / 0:${MAX_RECORDING_MS / 1000}`}
-      </Text>
+      <Text style={styles.mono}>{`0:${String(seconds).padStart(2, '0')} / 0:${MAX_RECORDING_MS / 1000}`}</Text>
       {permission && <Text style={styles.mono}>mic: {permission}</Text>}
       {result && <ResultInfo result={result} />}
-      {result?.kind === 'ok' && <PlayButton uri={result.uri} label="Play take" variant="primary" />}
+
+      {rawUri && (
+        <>
+          <PlayButton uri={rawUri} label="Play take" variant="primary" />
+          <Button label="Reverse" onPress={() => reverse(rawUri, 'rev', setRev)} />
+          {rev && <StepInfo label="reverse" step={rev} />}
+          {revUri && <PlayButton uri={revUri} label="Play reversed" />}
+          {revUri && <Button label="Reverse again" onPress={() => reverse(revUri, 'rev2', setRev2)} />}
+          {rev2 && <StepInfo label="reverse again" step={rev2} />}
+          {rev2 && 'uri' in rev2 && <PlayButton uri={rev2.uri} label="Play double-reversed" />}
+        </>
+      )}
+
+      <Button label="Delete all" onPress={deleteAll} />
+      <Text style={styles.mono}>
+        {`files in ${AUDIO_DIR}: ${listing.length}\n${listing.join('\n')}`}
+      </Text>
     </View>
+  );
+}
+
+function StepInfo({ label, step }: { label: string; step: Step }) {
+  return (
+    <Text style={styles.mono}>{'error' in step ? `${label} failed: ${step.error}` : `${label}: ${step.ms} ms`}</Text>
   );
 }
 
@@ -121,6 +180,14 @@ function ResultInfo({ result }: { result: TakeResult }) {
         `encoding: ${result.encoding}`,
       ].join('\n')}
     </Text>
+  );
+}
+
+function Button({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" onPress={onPress} style={styles.button}>
+      <Text style={styles.buttonLabel}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -172,5 +239,14 @@ const styles = StyleSheet.create({
   },
   recording: { backgroundColor: '#555555' },
   recordLabel: { color: '#FFFFFF', fontSize: 20, fontWeight: '700' },
+  button: {
+    minHeight: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#888',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonLabel: { fontSize: 17, fontWeight: '600' },
   mono: { fontFamily: 'Menlo', fontSize: 13 },
 });
