@@ -2,6 +2,8 @@ import { useAudioPlayer, useAudioPlayerStatus, type AudioPlayer } from 'expo-aud
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { useTheme } from './theme';
+
 type Props = {
   uri: string | null;
   label: string;
@@ -16,6 +18,7 @@ export function PlayButton({ uri, label, accessibilityLabel, variant = 'secondar
   const player = useAudioPlayer(uri ?? null);
   const status = useAudioPlayerStatus(player);
   const disabled = !uri;
+  const t = useTheme();
 
   useEffect(
     () => () => {
@@ -51,10 +54,10 @@ export function PlayButton({ uri, label, accessibilityLabel, variant = 'secondar
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        primary ? styles.primary : styles.secondary,
+        primary ? { backgroundColor: t.accent } : { borderColor: t.accent, borderWidth: 1.5 },
         (pressed || disabled) && styles.dimmed,
       ]}>
-      <Text style={[styles.label, primary && styles.primaryLabel]}>
+      <Text style={[styles.label, { color: primary ? t.onAccent : t.accent }]}>
         {status.playing ? 'Playing…' : label}
       </Text>
     </Pressable>
@@ -63,16 +66,13 @@ export function PlayButton({ uri, label, accessibilityLabel, variant = 'secondar
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
+    minHeight: 52,
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primary: { backgroundColor: '#2F5BD3' },
-  secondary: { borderWidth: 1.5, borderColor: '#2F5BD3' },
-  dimmed: { opacity: 0.5 },
-  label: { fontSize: 17, fontWeight: '600', color: '#2F5BD3' },
-  primaryLabel: { color: '#FFFFFF' },
+  dimmed: { opacity: 0.45 },
+  label: { fontSize: 17, fontWeight: '600', textAlign: 'center' },
 });
