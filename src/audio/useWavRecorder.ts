@@ -52,6 +52,8 @@ export function useWavRecorder({
 
   const phase = useRef<Phase>('idle');
   const fileUri = useRef<string | null>(null);
+  /** The requested target: native may create it before throwing, so it is cleaned up too. */
+  const target = useRef<string | null>(null);
   const startedAt = useRef(0);
   const ticker = useRef<ReturnType<typeof setInterval> | null>(null);
   const mounted = useRef(true);
@@ -75,6 +77,7 @@ export function useWavRecorder({
     clearTicker();
     phase.current = 'idle';
     fileUri.current = null;
+    target.current = null;
     if (!mounted.current) return;
     setIsRecording(false);
     setElapsedMs(0);
@@ -84,7 +87,7 @@ export function useWavRecorder({
   const fail = useCallback(
     (reason: InterruptReason) => {
       stopStreamQuietly();
-      deleteFileQuietly(fileUri.current);
+      deleteFileQuietly(fileUri.current ?? target.current);
       settle({ kind: 'interrupted', reason });
     },
     [settle, stopStreamQuietly]
@@ -105,6 +108,7 @@ export function useWavRecorder({
           return;
         }
         fileUri.current = null; // ownership passes to the caller
+        target.current = null;
         settle({
           kind: 'ok',
           uri: meta.uri,
@@ -126,6 +130,9 @@ export function useWavRecorder({
     async (targetUri?: string) => {
       if (phase.current !== 'idle') return; // ignore double taps
       phase.current = 'starting';
+      target.current = targetUri ?? null;
+      // Expo's native WAV writers append to an existing file, so never record into one.
+      if (targetUri) deleteFileQuietly(targetUri);
       try {
         await setRecordingAudioMode();
         await stream.start();
@@ -164,7 +171,7 @@ export function useWavRecorder({
   const cancel = useCallback(async () => {
     if (phase.current === 'idle') return;
     stopStreamQuietly(); // finalises any in-progress file
-    deleteFileQuietly(fileUri.current);
+    deleteFileQuietly(fileUri.current ?? target.current);
     settle(null);
   }, [settle, stopStreamQuietly]);
 
@@ -192,9 +199,10 @@ export function useWavRecorder({
       if (phase.current !== 'idle') {
         clearTicker();
         stopStreamQuietly();
-        deleteFileQuietly(fileUri.current);
+        deleteFileQuietly(fileUri.current ?? target.current);
         phase.current = 'idle';
         fileUri.current = null;
+        target.current = null;
       }
     };
   }, [stopStreamQuietly]);

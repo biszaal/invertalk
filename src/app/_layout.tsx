@@ -52,7 +52,14 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <ChallengeProvider>
-        <Stack screenOptions={{ title: '', headerShadowVisible: false, headerBackButtonDisplayMode: 'minimal' }}>
+        <Stack
+          screenOptions={{
+            title: '',
+            headerShadowVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
+            // iOS long-press on Back lists earlier screens; from Imitate that would jump to the phrase.
+            headerBackButtonMenuEnabled: false,
+          }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="prompt" options={{ ...handOverOptions, headerBackVisible: false }} />
           <Stack.Screen name="imitate" options={handOverOptions} />

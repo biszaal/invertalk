@@ -8,7 +8,8 @@ Prepared 2026-11-25 from the shipped code (branch `mvp`). Submission is a manual
 - [ ] **PostHog key.** Add `EXPO_PUBLIC_POSTHOG_KEY` to EAS (`eas env:create --name EXPO_PUBLIC_POSTHOG_KEY --environment preview --environment production`). Without it, the app sends no analytics; the answers below then overstate collection (allowed, but not ideal).
 - [ ] **PostHog project settings:** turn on *Discard client IP data*, and leave session replay off at project level too. The app already disables GeoIP lookups.
 - [x] **Dev audio screen removed** after QA (Checkpoint 5 passed). The launch sweep still deletes any `dev` temp files left by earlier QA builds.
-- [ ] **EAS project link.** `app.json` has no `extra.eas.projectId`; run `eas init` in the repo and commit it.
+- [x] **EAS project link.** `extra.eas.projectId` is in `app.json` (from `eas init`).
+- [ ] **App icon and splash.** Still the create-expo-app template art (Expo symbol in `assets/expo.icon`, `assets/images/*`). Replace before submit — App Review rejects placeholder or third-party marks.
 - [ ] **Xcode image.** All iOS profiles pin `macos-tahoe-26.6-xcode-27.1` (Xcode 27.1 RC, the image EAS tags `sdk-58`). Apple normally accepts RC builds; if App Store Connect rejects it, switch to a stable 27.x image from the EAS infrastructure page.
 - [ ] **Starter phrases** confirmed (or swapped) — `src/game/phrases.ts`.
 - [ ] **Store listing copy** written.

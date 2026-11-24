@@ -30,6 +30,9 @@ Run on both development builds (a new dev build is needed after Phase 5: PostHog
 | Full loop: phrase → reverse → imitate → reveal → replay | [ ] | [ ] |
 | Play the original / Show the phrase on Reveal | [ ] | [ ] |
 | Player 2 cannot see the phrase (swipe / Android back on hand-over) | [ ] | [ ] |
+| iOS: long-press the Back button on Imitate — no menu of earlier screens appears | [ ] | n/a |
+| Tap Stop exactly as the 20 s cap hits, then tap Record during "Stopped at 20 seconds." — Record stays locked, one hand-over only | [ ] | [ ] |
+| iOS banner call while recording, app stays in front (known gap: may keep a silent/truncated take — re-record) | [ ] | n/a |
 | Share sheet (audio only, no caption); cancel; share again | [ ] | [ ] |
 | Temp files gone after × / New phrase / relaunch (dev screen listing) | [ ] | [ ] |
 | Accessibility: record/stop/play labelled (VoiceOver/TalkBack); largest text size fits | [ ] | [ ] |

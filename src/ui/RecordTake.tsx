@@ -32,11 +32,15 @@ const INTERRUPTED: Record<InterruptReason, string> = {
 export function RecordTake({ role, targetUri, onRecorded }: Props) {
   const [message, setMessage] = useState<Message | null>(null);
   const [busy, setBusy] = useState(false);
+  // Once a take for this target is kept, Record stays locked until a retake gives a new target.
+  const [doneFor, setDoneFor] = useState<string | null>(null);
+  const locked = doneFor === targetUri;
   const handoff = useRef<{ timer: ReturnType<typeof setTimeout>; uri: string } | null>(null);
 
   const recorder = useWavRecorder({
     onFinished: (r) => {
       if (r.kind === 'ok') {
+        setDoneFor(targetUri);
         track({
           name: 'recording_completed',
           role,
@@ -78,6 +82,7 @@ export function RecordTake({ role, targetUri, onRecorded }: Props) {
   );
 
   const onPress = async () => {
+    if (locked) return;
     if (recorder.isRecording) {
       await recorder.stop();
       return;
@@ -105,7 +110,7 @@ export function RecordTake({ role, targetUri, onRecorded }: Props) {
   return (
     <View style={styles.wrap}>
       <ElapsedTimer elapsedMs={recorder.elapsedMs} />
-      <RecordButton recording={recorder.isRecording} onPress={onPress} disabled={busy} />
+      <RecordButton recording={recorder.isRecording} onPress={onPress} disabled={busy || locked} />
       {message && <Notice tone={message.tone} text={message.text} />}
       {message?.retry && (
         <View style={styles.actions}>
