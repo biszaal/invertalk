@@ -6,6 +6,5 @@ export const MIN_RECORDING_MS = 500;
 export const CUSTOM_PHRASE_MAX = 60;
 /** Bump to re-ask recording consent after the consent text changes. */
 export const CONSENT_VERSION = 1;
-/** Hosted privacy policy. Must be replaced before any store submission. */
-export const PRIVACY_POLICY_URL = 'https://example.com/invertalk-privacy-PLACEHOLDER';
-export const PRIVACY_POLICY_IS_PLACEHOLDER = true;
+/** Hosted privacy policy (source: src/pages/InvertalkPrivacy.tsx in the biszaal-tech-website repo). */
+export const PRIVACY_POLICY_URL = 'https://www.biszaaltech.com/games/invertalk/privacy';

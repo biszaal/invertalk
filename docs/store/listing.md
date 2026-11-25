@@ -1,6 +1,6 @@
-# Invertalk — store listing copy (draft)
+# Invertalk — store listing copy
 
-Paste-ready. Every field is within its store's character limit (counts in brackets). Fill the `[…]` placeholders before submitting. Claims below match the shipped app: no ads, no in-app purchases, no account, works offline, recordings never uploaded, anonymous analytics only.
+Paste-ready. Every field is within its store's character limit (counts in brackets). Claims below match the shipped app: no ads, no in-app purchases, no account, works offline, recordings never uploaded, anonymous analytics only.
 
 ## App Store (App Store Connect)
 
@@ -12,10 +12,10 @@ Paste-ready. Every field is within its store's character limit (counts in bracke
 | Keywords [92/100] | `reverse,audio,voice,party,game,challenge,imitate,funny,sound,rewind,flip,speak,record,phrase` |
 | Primary category | Games — subcategories Family, Word |
 | Secondary category | Entertainment |
-| Support URL | [SUPPORT URL — can be the privacy policy page or a simple contact page] |
-| Marketing URL (optional) | [optional] |
-| Privacy Policy URL | [HOSTED PRIVACY POLICY URL] |
-| Copyright | © 2026 [LEGAL NAME] |
+| Support URL | https://www.biszaaltech.com/games/invertalk |
+| Marketing URL (optional) | https://www.biszaaltech.com/games/invertalk |
+| Privacy Policy URL | https://www.biszaaltech.com/games/invertalk/privacy |
+| Copyright | © 2026 BISZAAL TECH LTD |
 
 Keywords skip words already in the name and subtitle (Apple indexes those automatically) and use no competitor or platform trademarks.
 
@@ -27,8 +27,9 @@ Keywords skip words already in the name and subtitle (Apple indexes those automa
 | Short description [78/80] | Flip a phrase backwards, copy the sound, then hear your friend's try forwards. |
 | Category | Game → Casual (alternative: Word) |
 | Tags | Party, Casual, Word |
-| Contact email (public) | [CONTACT EMAIL] |
-| Privacy policy | [HOSTED PRIVACY POLICY URL] |
+| Website | https://www.biszaaltech.com/games/invertalk |
+| Contact email (public) | biszaalgames@gmail.com |
+| Privacy policy | https://www.biszaaltech.com/games/invertalk/privacy |
 
 ## Full description (App Store and Play)
 
