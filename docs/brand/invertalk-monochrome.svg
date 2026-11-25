@@ -1,22 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <!-- Single-colour silhouette for Android themed icons: bars are cut out (mirrored half at 50%). -->
-  <defs>
-    <mask id="bars">
-      <rect width="1024" height="1024" fill="#fff"/>
-      <g fill="#000">
-        <rect x="252" y="422" width="40" height="110" rx="20"/><rect x="316" y="372" width="40" height="210" rx="20"/>
-        <rect x="380" y="402" width="40" height="150" rx="20"/><rect x="444" y="342" width="40" height="270" rx="20"/>
-      </g>
-      <g fill="#808080">
-        <rect x="540" y="342" width="40" height="270" rx="20"/><rect x="604" y="402" width="40" height="150" rx="20"/>
-        <rect x="668" y="372" width="40" height="210" rx="20"/><rect x="732" y="422" width="40" height="110" rx="20"/>
-      </g>
-    </mask>
-  </defs>
-  <g transform="translate(512 512) scale(0.66) translate(-512 -546)">
-    <g fill="#FFFFFF" mask="url(#bars)">
-      <rect x="182" y="242" width="660" height="470" rx="160"/>
-      <path d="M570 705 L810 850 Q755 780 735 700 Z"/>
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1024" height="1024">
+  <!-- Android themed-icon layer: one colour; the system tints it. -->
+  <g transform="translate(50 50) scale(0.62) translate(-50 -50)"><circle cx="36" cy="24" r="10" fill="#FFFFFF"/><rect x="26" y="40" width="20" height="46" rx="10" fill="#FFFFFF"/><rect x="54" y="14" width="20" height="46" rx="10" fill="#FFFFFF"/><circle cx="64" cy="76" r="10" fill="#FFFFFF"/></g>
 </svg>

@@ -9,7 +9,7 @@ Prepared 2026-11-25 from the shipped code (branch `mvp`). Submission is a manual
 - [ ] **PostHog project settings:** turn on *Discard client IP data*, and leave session replay off at project level too. The app already disables GeoIP lookups.
 - [x] **Dev audio screen removed** after QA (Checkpoint 5 passed). The launch sweep still deletes any `dev` temp files left by earlier QA builds.
 - [x] **EAS project link.** `extra.eas.projectId` is in `app.json` (from `eas init`).
-- [x] **App icon and splash.** Replaced with the Invertalk mark (concept D, `docs/brand/`); template Expo art removed.
+- [x] **App icon and splash.** The Invertalk "Two i's" mark (`docs/brand/`), with light and dark splash screens; template Expo art removed.
 - [ ] **Xcode image.** All iOS profiles pin `macos-tahoe-26.6-xcode-27.1` (Xcode 27.1 RC, the image EAS tags `sdk-58`). Apple normally accepts RC builds; if App Store Connect rejects it, switch to a stable 27.x image from the EAS infrastructure page.
 - [ ] **Starter phrases** confirmed (or swapped) — `src/game/phrases.ts`.
 - [ ] **Store listing.** Copy and URLs ready in `docs/store/listing.md` (support URL https://www.biszaaltech.com/games/invertalk). Still to make: screenshots from a preview build, and the Google Play feature graphic.
