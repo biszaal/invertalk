@@ -1,6 +1,11 @@
 import { useColorScheme } from 'react-native';
 
+/**
+ * Invertalk brand C ("Two i's"): paper, ink and one saffron accent.
+ * Every text/background pair below meets WCAG AA (4.5:1) in both schemes.
+ */
 export type Palette = {
+  scheme: 'light' | 'dark';
   background: string;
   surface: string;
   text: string;
@@ -8,44 +13,66 @@ export type Palette = {
   accent: string;
   onAccent: string;
   border: string;
-  record: string;
-  onRecord: string;
+  /** The dark "stage" card that holds players and the hero art, in both schemes. */
+  stage: string;
+  onStage: string;
+  stageMuted: string;
+  /** Unplayed waveform bars on the stage. */
+  bar: string;
+  selectedBg: string;
   infoBg: string;
   errorBg: string;
   errorText: string;
 };
 
-/** Calm, plain palette. Text/background pairs meet WCAG AA (≥ 4.5:1). */
 const light: Palette = {
-  background: '#F7F7F4',
-  surface: '#FFFFFF',
-  text: '#1B1B1F',
-  muted: '#55555F',
-  accent: '#2F55C8',
-  onAccent: '#FFFFFF',
-  border: '#CFCFD6',
-  record: '#B3261E',
-  onRecord: '#FFFFFF',
-  infoBg: '#E9EEFB',
-  errorBg: '#FBE9E8',
-  errorText: '#8C1D18',
+  scheme: 'light',
+  background: '#F4F0E8',
+  surface: '#FFFDF8',
+  text: '#1C1B19',
+  muted: '#6E6A62',
+  accent: '#F0A93A',
+  onAccent: '#1C1B19',
+  border: '#DDD5C7',
+  stage: '#1C1B19',
+  onStage: '#FFFDF8',
+  stageMuted: '#B5AFA4',
+  bar: '#3A3733',
+  selectedBg: '#FBEBCF',
+  infoBg: '#EFE6D3',
+  errorBg: '#F8E3DC',
+  errorText: '#8C2F1B',
 };
 
 const dark: Palette = {
-  background: '#121214',
-  surface: '#1D1D21',
-  text: '#EDEDF0',
-  muted: '#A9A9B3',
-  accent: '#93AAFF',
-  onAccent: '#0B1533',
-  border: '#3A3A42',
-  record: '#F2B8B5',
-  onRecord: '#3B0907',
-  infoBg: '#1E2540',
-  errorBg: '#3A1B19',
-  errorText: '#F9DEDC',
+  scheme: 'dark',
+  background: '#151412',
+  surface: '#201E1B',
+  text: '#F4F0E8',
+  muted: '#A8A196',
+  accent: '#F0A93A',
+  onAccent: '#1C1B19',
+  border: '#34312C',
+  stage: '#24221F',
+  onStage: '#F4F0E8',
+  stageMuted: '#A8A196',
+  bar: '#45413B',
+  selectedBg: '#33291A',
+  infoBg: '#2A2620',
+  errorBg: '#3A221B',
+  errorText: '#F6C9BB',
 };
 
 export function useTheme(): Palette {
   return useColorScheme() === 'dark' ? dark : light;
 }
+
+/** Font families loaded in the root layout (each family name is one weight). */
+export const fonts = {
+  regular: 'Outfit_400Regular',
+  medium: 'Outfit_500Medium',
+  semibold: 'Outfit_600SemiBold',
+  bold: 'Outfit_700Bold',
+  black: 'Outfit_800ExtraBold',
+  mono: 'GeistMono_500Medium',
+} as const;

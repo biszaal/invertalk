@@ -1,14 +1,17 @@
+import Feather from '@expo/vector-icons/Feather';
 import Constants from 'expo-constants';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { PRIVACY_POLICY_URL } from '@/config';
 import type { ConsentRecord } from '@/game/consent';
 import { readConsent } from '@/game/consentStore';
-import { Button } from '@/ui/Button';
+import type { IconName } from '@/ui/Button';
 import { formatDate } from '@/ui/formatDate';
+import { Mark } from '@/ui/Mark';
 import { Screen } from '@/ui/Screen';
+import { Txt } from '@/ui/Txt';
 import { useTheme } from '@/ui/theme';
 
 export default function SettingsScreen() {
@@ -25,43 +28,50 @@ export default function SettingsScreen() {
   const build = Platform.OS === 'ios' ? config?.ios?.buildNumber : config?.android?.versionCode;
 
   return (
-    <Screen title="Settings">
-      <View style={styles.section}>
-        <Text accessibilityRole="header" style={[styles.heading, { color: t.text }]}>
-          Privacy
-        </Text>
-        <Text style={[styles.body, { color: t.text }]}>
-          Recordings stay on this phone and are deleted after each game.
-        </Text>
-        <Button label="Privacy policy" variant="secondary" onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)} />
-      </View>
-
-      <View style={styles.section}>
-        <Text accessibilityRole="header" style={[styles.heading, { color: t.text }]}>
-          Recording consent
-        </Text>
-        {consent !== undefined && (
-          <Text style={[styles.body, { color: t.text }]}>
-            {consent ? `Agreed on ${formatDate(consent.acceptedAt)}` : 'Not agreed yet'}
-          </Text>
-        )}
-        <Button
-          label="Read it again"
-          variant="secondary"
+    <Screen eyebrow="Settings" title="Privacy and you.">
+      <Txt variant="body">Recordings stay on this phone and are deleted after each game.</Txt>
+      <View style={[styles.card, { backgroundColor: t.surface, borderColor: t.border }]}>
+        <Row icon="shield" label="Privacy policy" detail="biszaaltech.com" onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)} divider />
+        <Row
+          icon="mic"
+          label="Recording consent"
+          detail={consent === undefined ? ' ' : consent ? `Agreed on ${formatDate(consent.acceptedAt)}` : 'Not agreed yet'}
           onPress={() => router.push({ pathname: '/consent', params: { mode: 'review' } })}
         />
       </View>
-
-      <Text style={[styles.version, { color: t.muted }]}>
-        {`Version ${config?.version ?? '?'}${build ? ` (${build})` : ''}`}
-      </Text>
+      <View style={styles.about}>
+        <Mark size={28} />
+        <Txt variant="meta">{`Invertalk ${config?.version ?? '?'}${build ? ` (${build})` : ''}`}</Txt>
+      </View>
     </Screen>
   );
 }
 
+function Row({ icon, label, detail, onPress, divider }: { icon: IconName; label: string; detail: string; onPress: () => void; divider?: boolean }) {
+  const t = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label}. ${detail}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, divider && { borderBottomWidth: 1, borderBottomColor: t.border }, pressed && styles.pressed]}>
+      <View style={[styles.rowIcon, { backgroundColor: t.selectedBg }]}>
+        <Feather name={icon} size={17} color={t.text} />
+      </View>
+      <View style={styles.rowText}>
+        <Txt variant="label">{label}</Txt>
+        <Txt variant="meta">{detail}</Txt>
+      </View>
+      <Feather name="chevron-right" size={18} color={t.muted} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  section: { gap: 12 },
-  heading: { fontSize: 20, fontWeight: '700' },
-  body: { fontSize: 17, lineHeight: 24 },
-  version: { fontSize: 15, marginTop: 8 },
+  card: { borderRadius: 24, borderWidth: 1, paddingHorizontal: 16 },
+  row: { minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12 },
+  rowIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  rowText: { flex: 1, gap: 3 },
+  pressed: { opacity: 0.7 },
+  about: { marginTop: 'auto', flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 16 },
 });

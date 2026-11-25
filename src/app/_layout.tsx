@@ -1,6 +1,15 @@
+import { GeistMono_500Medium } from '@expo-google-fonts/geist-mono';
+import {
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/outfit';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, usePathname } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { useColorScheme } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { initAnalytics, track } from '@/analytics';
 import { screenName } from '@/analytics/events';
@@ -8,6 +17,10 @@ import { sweepTempDir } from '@/audio/cleanup';
 import { audioDir, expoFileOps } from '@/audio/expoFileOps';
 import { ChallengeProvider } from '@/game/ChallengeProvider';
 import { EndGameButton } from '@/ui/EndGameButton';
+import { fonts, useTheme } from '@/ui/theme';
+
+// Keep the splash up until the brand fonts are ready, so text never flashes in a fallback face.
+void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 /** Screens Player 2 holds: no swipe-back (it could reveal the phrase) and an × to end the game. */
 const handOverOptions = {
@@ -16,8 +29,29 @@ const handOverOptions = {
 };
 
 export default function RootLayout() {
-  const scheme = useColorScheme();
+  const t = useTheme();
   const pathname = usePathname();
+  const [fontsLoaded, fontError] = useFonts({
+    Outfit_400Regular,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
+    Outfit_700Bold,
+    Outfit_800ExtraBold,
+    GeistMono_500Medium,
+  });
+
+  useEffect(() => {
+    // If a font fails to load, carry on with the system face rather than hang on the splash.
+    if (fontsLoaded || fontError) void SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded, fontError]);
+
+  const navTheme = useMemo(() => {
+    const base = t.scheme === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: { ...base.colors, background: t.background, card: t.background, text: t.text, border: t.border, primary: t.accent },
+    };
+  }, [t]);
   const currentPath = useRef(pathname);
 
   useEffect(() => {
@@ -49,13 +83,19 @@ export default function RootLayout() {
     }
   }, []);
 
+  if (!fontsLoaded && !fontError) return null;
+
   return (
-    <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={navTheme}>
       <ChallengeProvider>
         <Stack
           screenOptions={{
             title: '',
             headerShadowVisible: false,
+            headerStyle: { backgroundColor: t.background },
+            headerTintColor: t.text,
+            headerTitleStyle: { fontFamily: fonts.semibold },
+            contentStyle: { backgroundColor: t.background },
             headerBackButtonDisplayMode: 'minimal',
             // iOS long-press on Back lists earlier screens; from Imitate that would jump to the phrase.
             headerBackButtonMenuEnabled: false,

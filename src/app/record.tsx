@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useChallenge } from '@/game/ChallengeProvider';
 import { RecordTake } from '@/ui/RecordTake';
 import { Screen } from '@/ui/Screen';
-import { useTheme } from '@/ui/theme';
+import { Txt } from '@/ui/Txt';
+import { fonts, useTheme } from '@/ui/theme';
 
 /** Player 1 sees the phrase and records it. */
 export default function RecordScreen() {
@@ -14,25 +15,31 @@ export default function RecordScreen() {
   if (!state.sessionId || !state.phrase) return null;
 
   return (
-    <Screen title="Player 1">
+    <Screen eyebrow="Player 1" title="Say it clearly.">
       <View style={[styles.card, { backgroundColor: t.surface, borderColor: t.border }]}>
-        <Text style={[styles.phrase, { color: t.text }]}>{state.phrase.text}</Text>
+        <Txt style={styles.phrase}>
+          <Txt style={[styles.phrase, { color: t.accent }]}>“</Txt>
+          {state.phrase.text}
+          <Txt style={[styles.phrase, { color: t.accent }]}>”</Txt>
+        </Txt>
       </View>
-      <Text style={[styles.hint, { color: t.muted }]}>Say it clearly. You'll hear it backwards next.</Text>
-      <RecordTake
-        role="prompt"
-        targetUri={fileUri('prompt', 'raw')}
-        onRecorded={(take) => {
-          recorded('prompt', take.uri, take.durationMs);
-          router.push('/prompt');
-        }}
-      />
+      <Txt variant="muted">You&apos;ll hear it backwards next.</Txt>
+      <View style={styles.take}>
+        <RecordTake
+          role="prompt"
+          targetUri={fileUri('prompt', 'raw')}
+          onRecorded={(take) => {
+            recorded('prompt', take.uri, take.durationMs);
+            router.push('/prompt');
+          }}
+        />
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { padding: 20, borderRadius: 16, borderWidth: 1 },
-  phrase: { fontSize: 28, fontWeight: '700', lineHeight: 36 },
-  hint: { fontSize: 17, lineHeight: 24 },
+  card: { borderRadius: 24, borderWidth: 1, padding: 22 },
+  phrase: { fontFamily: fonts.black, fontSize: 30, lineHeight: 36, letterSpacing: -0.9 },
+  take: { marginTop: 'auto', paddingTop: 12 },
 });

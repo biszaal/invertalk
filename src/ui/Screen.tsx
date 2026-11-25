@@ -1,28 +1,39 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
+import { Txt } from './Txt';
 import { useTheme } from './theme';
 
 type Props = {
+  /** Small mono label above the title, e.g. "Player 1". */
+  eyebrow?: string;
   title?: string;
   children: ReactNode;
+  /** Pinned to the bottom (primary actions); scrolls with the page on small screens. */
+  footer?: ReactNode;
   /** Screens without a navigation header need the top edge too. */
   edges?: Edge[];
 };
 
 /** Scrolling page so the largest Dynamic Type sizes never clip. */
-export function Screen({ title, children, edges = ['bottom', 'left', 'right'] }: Props) {
+export function Screen({ eyebrow, title, children, footer, edges = ['bottom', 'left', 'right'] }: Props) {
   const t = useTheme();
   return (
     <SafeAreaView edges={edges} style={[styles.safe, { backgroundColor: t.background }]}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {title ? (
-          <Text accessibilityRole="header" style={[styles.title, { color: t.text }]}>
-            {title}
-          </Text>
+        {eyebrow || title ? (
+          <View style={styles.head}>
+            {eyebrow ? <Txt variant="eyebrow">{eyebrow}</Txt> : null}
+            {title ? (
+              <Txt variant="title" accessibilityRole="header">
+                {title}
+              </Txt>
+            ) : null}
+          </View>
         ) : null}
         {children}
+        {footer ? <View style={styles.footer}>{footer}</View> : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -30,6 +41,7 @@ export function Screen({ title, children, edges = ['bottom', 'left', 'right'] }:
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { padding: 20, gap: 16, flexGrow: 1 },
-  title: { fontSize: 28, fontWeight: '700' },
+  content: { paddingHorizontal: 22, paddingTop: 8, paddingBottom: 20, gap: 18, flexGrow: 1 },
+  head: { gap: 8 },
+  footer: { marginTop: 'auto', gap: 10, paddingTop: 8 },
 });
