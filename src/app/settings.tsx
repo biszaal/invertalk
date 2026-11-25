@@ -3,12 +3,11 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
 
-import { PRIVACY_POLICY_IS_PLACEHOLDER, PRIVACY_POLICY_URL } from '@/config';
+import { PRIVACY_POLICY_URL } from '@/config';
 import type { ConsentRecord } from '@/game/consent';
 import { readConsent } from '@/game/consentStore';
 import { Button } from '@/ui/Button';
 import { formatDate } from '@/ui/formatDate';
-import { Notice } from '@/ui/Notice';
 import { Screen } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
 
@@ -35,9 +34,6 @@ export default function SettingsScreen() {
           Recordings stay on this phone and are deleted after each game.
         </Text>
         <Button label="Privacy policy" variant="secondary" onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)} />
-        {__DEV__ && PRIVACY_POLICY_IS_PLACEHOLDER && (
-          <Notice tone="error" text="Placeholder URL — replace before store submit." />
-        )}
       </View>
 
       <View style={styles.section}>
