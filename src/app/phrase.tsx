@@ -1,6 +1,7 @@
+import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { track } from '@/analytics';
 import { CUSTOM_PHRASE_MAX } from '@/config';
@@ -9,7 +10,8 @@ import { checkCustomPhrase, STARTER_PHRASES, type Phrase } from '@/game/phrases'
 import { Button } from '@/ui/Button';
 import { Notice } from '@/ui/Notice';
 import { Screen } from '@/ui/Screen';
-import { useTheme } from '@/ui/theme';
+import { Txt } from '@/ui/Txt';
+import { fonts, useTheme } from '@/ui/theme';
 
 export default function PhraseScreen() {
   const t = useTheme();
@@ -38,8 +40,11 @@ export default function PhraseScreen() {
   };
 
   return (
-    <Screen title="Pick a phrase">
-      <Text style={[styles.hint, { color: t.muted }]}>Player 1 picks. Don't let Player 2 see it.</Text>
+    <Screen
+      eyebrow="Player 1"
+      title="Pick a phrase."
+      footer={<Button label="Continue" icon="arrow-right" onPress={onContinue} disabled={!phrase} />}>
+      <Txt variant="muted">Don&apos;t let Player 2 see it.</Txt>
       <View accessibilityRole="radiogroup" style={styles.list}>
         {STARTER_PHRASES.map((p) => {
           const selected = p.id === presetId;
@@ -52,47 +57,57 @@ export default function PhraseScreen() {
                 setPresetId(p.id);
                 setCustom('');
               }}
-              style={[
+              style={({ pressed }) => [
                 styles.row,
-                { borderColor: selected ? t.accent : t.border, backgroundColor: selected ? t.infoBg : t.surface },
+                {
+                  borderColor: selected ? t.accent : t.border,
+                  backgroundColor: selected ? t.selectedBg : t.surface,
+                  borderWidth: selected ? 2 : 1,
+                },
+                pressed && styles.pressed,
               ]}>
-              <Text style={[styles.rowText, { color: t.text }, selected && styles.selectedText]}>{p.text}</Text>
+              <Txt variant={selected ? 'label' : 'body'} style={styles.rowText}>
+                {p.text}
+              </Txt>
+              {selected ? <Feather name="check" size={18} color={t.text} /> : null}
             </Pressable>
           );
         })}
       </View>
 
-      <Text style={[styles.label, { color: t.text }]} nativeID="customLabel">
-        Type your own
-      </Text>
-      <TextInput
-        accessibilityLabelledBy="customLabel"
-        accessibilityLabel="Type your own phrase"
-        value={custom}
-        onChangeText={(text) => {
-          setCustom(text);
-          if (text) setPresetId(null);
-        }}
-        placeholder="A short line you can say in a few seconds"
-        placeholderTextColor={t.muted}
-        maxLength={CUSTOM_PHRASE_MAX + 20}
-        autoCorrect
-        returnKeyType="done"
-        style={[styles.input, { color: t.text, borderColor: t.border, backgroundColor: t.surface }]}
-      />
-      {tooLong && <Notice tone="error" text={`Keep it short — ${CUSTOM_PHRASE_MAX} characters or fewer.`} />}
-
-      <Button label="Continue" onPress={onContinue} disabled={!phrase} />
+      <View style={styles.custom}>
+        <Txt variant="eyebrow" nativeID="customLabel">
+          Or type your own
+        </Txt>
+        <TextInput
+          accessibilityLabelledBy="customLabel"
+          accessibilityLabel="Type your own phrase"
+          value={custom}
+          onChangeText={(text) => {
+            setCustom(text);
+            if (text) setPresetId(null);
+          }}
+          placeholder="A short line you can say in a few seconds"
+          placeholderTextColor={t.muted}
+          maxLength={CUSTOM_PHRASE_MAX + 20}
+          autoCorrect
+          returnKeyType="done"
+          style={[
+            styles.input,
+            { color: t.text, borderColor: check.ok && !preset ? t.accent : t.border, backgroundColor: t.surface },
+          ]}
+        />
+        {tooLong && <Notice tone="error" text={`Keep it short — ${CUSTOM_PHRASE_MAX} characters or fewer.`} />}
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hint: { fontSize: 16 },
   list: { gap: 8 },
-  row: { minHeight: 52, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, borderWidth: 1.5, justifyContent: 'center' },
-  rowText: { fontSize: 17 },
-  selectedText: { fontWeight: '600' },
-  label: { fontSize: 17, fontWeight: '600', marginTop: 8 },
-  input: { minHeight: 52, borderWidth: 1.5, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 17 },
+  row: { minHeight: 56, paddingHorizontal: 18, paddingVertical: 14, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  rowText: { flex: 1 },
+  pressed: { transform: [{ scale: 0.99 }] },
+  custom: { gap: 10, marginTop: 6 },
+  input: { minHeight: 56, borderWidth: 1.5, borderRadius: 18, paddingHorizontal: 18, paddingVertical: 14, fontSize: 17, fontFamily: fonts.regular },
 });

@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { MAX_RECORDING_MS } from '@/config';
 
-import { useTheme } from './theme';
+import { Txt } from './Txt';
+import { fonts, useTheme } from './theme';
 
-/** `0:07 / 0:20` plus a bar showing how much of the 20-second cap is used. */
+/** Large `0:07` readout with the 20-second cap beside it, and a bar filling toward the cap. */
 export function ElapsedTimer({ elapsedMs }: { elapsedMs: number }) {
   const t = useTheme();
   const seconds = Math.floor(elapsedMs / 1000);
@@ -12,17 +13,21 @@ export function ElapsedTimer({ elapsedMs }: { elapsedMs: number }) {
   const fraction = Math.min(elapsedMs / MAX_RECORDING_MS, 1);
   return (
     <View accessible accessibilityLabel={`${seconds} seconds of ${max}`} style={styles.wrap}>
-      <Text style={[styles.time, { color: t.text }]}>{`0:${String(seconds).padStart(2, '0')} / 0:${max}`}</Text>
+      <Txt style={styles.time}>
+        {`0:${String(seconds).padStart(2, '0')}`}
+        <Txt variant="meta" style={styles.max}>{`  / 0:${max}`}</Txt>
+      </Txt>
       <View style={[styles.track, { backgroundColor: t.border }]}>
-        <View style={[styles.fill, { backgroundColor: t.record, width: `${fraction * 100}%` }]} />
+        <View style={[styles.fill, { backgroundColor: t.accent, width: `${fraction * 100}%` }]} />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 8, alignItems: 'center' },
-  time: { fontSize: 20, fontVariant: ['tabular-nums'], fontWeight: '600' },
-  track: { alignSelf: 'stretch', height: 6, borderRadius: 3, overflow: 'hidden' },
-  fill: { height: 6 },
+  wrap: { gap: 12, alignItems: 'center' },
+  time: { fontFamily: fonts.mono, fontSize: 36, lineHeight: 42, letterSpacing: -1 },
+  max: { fontSize: 14 },
+  track: { alignSelf: 'stretch', height: 4, borderRadius: 2, overflow: 'hidden' },
+  fill: { height: 4 },
 });

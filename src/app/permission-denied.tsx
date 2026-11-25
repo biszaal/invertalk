@@ -1,10 +1,12 @@
+import Feather from '@expo/vector-icons/Feather';
 import { getRecordingPermissionsAsync } from 'expo-audio';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { AppState, Linking, StyleSheet, Text, View } from 'react-native';
+import { AppState, Linking, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/ui/Button';
 import { Screen } from '@/ui/Screen';
+import { Txt } from '@/ui/Txt';
 import { useTheme } from '@/ui/theme';
 
 export default function PermissionDeniedScreen() {
@@ -22,19 +24,25 @@ export default function PermissionDeniedScreen() {
   }, []);
 
   return (
-    <Screen title="Microphone is off">
-      <Text style={[styles.body, { color: t.text }]}>
-        Invertalk needs the microphone to record the phrase and the imitation. Recordings stay on this phone.
-      </Text>
-      <View style={styles.actions}>
-        <Button label="Open Settings" onPress={() => void Linking.openSettings()} />
-        <Button label="Back" variant="secondary" onPress={() => router.back()} />
+    <Screen
+      eyebrow="Microphone"
+      title="Microphone is off."
+      footer={
+        <>
+          <Button label="Open Settings" icon="arrow-up-right" onPress={() => void Linking.openSettings()} />
+          <Button label="Back" variant="secondary" onPress={() => router.back()} />
+        </>
+      }>
+      <View style={[styles.icon, { backgroundColor: t.selectedBg }]}>
+        <Feather name="mic-off" size={26} color={t.text} />
       </View>
+      <Txt variant="body">
+        Invertalk needs the microphone to record the phrase and the imitation. Recordings stay on this phone.
+      </Txt>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  body: { fontSize: 18, lineHeight: 26 },
-  actions: { gap: 12 },
+  icon: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
 });

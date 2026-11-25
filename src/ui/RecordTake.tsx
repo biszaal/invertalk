@@ -14,6 +14,7 @@ import { Button } from './Button';
 import { ElapsedTimer } from './ElapsedTimer';
 import { Notice } from './Notice';
 import { RecordButton } from './RecordButton';
+import { Txt } from './Txt';
 
 export type OkTake = Extract<TakeResult, { kind: 'ok' }>;
 
@@ -97,7 +98,7 @@ export function RecordTake({ role, targetUri, onRecorded }: Props) {
         return;
       }
       if (mic.status !== 'granted') {
-        setMessage({ tone: 'error', text: 'Invertalk needs the microphone to play. Tap Record to allow it.' });
+        setMessage({ tone: 'error', text: 'Invertalk needs the microphone to play. Tap the record button to allow it.' });
         return;
       }
       setMessage(null);
@@ -110,7 +111,10 @@ export function RecordTake({ role, targetUri, onRecorded }: Props) {
   return (
     <View style={styles.wrap}>
       <ElapsedTimer elapsedMs={recorder.elapsedMs} />
-      <RecordButton recording={recorder.isRecording} onPress={onPress} disabled={busy || locked} />
+      <View style={styles.control}>
+        <RecordButton recording={recorder.isRecording} onPress={onPress} disabled={busy || locked} />
+        <Txt variant="muted">{recorder.isRecording ? 'Tap to stop' : locked ? 'Got it' : 'Tap to record'}</Txt>
+      </View>
       {message && <Notice tone={message.tone} text={message.text} />}
       {message?.retry && (
         <View style={styles.actions}>
@@ -123,6 +127,7 @@ export function RecordTake({ role, targetUri, onRecorded }: Props) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 16 },
-  actions: { gap: 12 },
+  wrap: { gap: 22 },
+  control: { alignItems: 'center', gap: 14 },
+  actions: { gap: 10 },
 });

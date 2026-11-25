@@ -1,19 +1,18 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
-import { Alert, BackHandler, StyleSheet, Text } from 'react-native';
+import { Alert, BackHandler } from 'react-native';
 
 import { useChallenge } from '@/game/ChallengeProvider';
 import { useReversal } from '@/game/useReversal';
 import { Button } from '@/ui/Button';
 import { failureText } from '@/ui/failureText';
 import { Notice } from '@/ui/Notice';
-import { PlayButton } from '@/ui/PlayButton';
 import { Screen } from '@/ui/Screen';
-import { useTheme } from '@/ui/theme';
+import { Txt } from '@/ui/Txt';
+import { WavePlayer } from '@/ui/WavePlayer';
 
 /** Player 1 hears the phrase backwards, then hands over. Never shows the phrase. */
 export default function PromptScreen() {
-  const t = useTheme();
   const { state, rerecordPrompt } = useChallenge();
   const reversal = useReversal('prompt');
 
@@ -42,29 +41,33 @@ export default function PromptScreen() {
 
   if (!state.sessionId) return null;
 
+  if (reversal.status === 'failed') {
+    return (
+      <Screen eyebrow="Hand it over" title="That didn't work." footer={<Button label="Record again" onPress={backToPhrase} />}>
+        <Notice tone="error" text={failureText(reversal.code, "Couldn't play that recording backwards. Please record it again.")} />
+      </Screen>
+    );
+  }
+
+  const ready = reversal.status === 'ready';
   return (
-    <Screen title="Hear it backwards">
-      {reversal.status === 'preparing' && <Notice text="Flipping it backwards…" />}
-      {reversal.status === 'failed' && (
-        <>
-          <Notice tone="error" text={failureText(reversal.code, "Couldn't play that recording backwards. Please record it again.")} />
-          <Button label="Record again" onPress={backToPhrase} />
-        </>
-      )}
-      {reversal.status === 'ready' && (
-        <>
-          <PlayButton uri={reversal.revUri} label="Play backwards" variant="primary" />
-          <Text style={[styles.body, { color: t.text }]}>
-            Hand the phone to Player 2. Don&apos;t show them the phrase.
-          </Text>
-          <Button label="I'm Player 2 — record my try" onPress={() => router.push('/imitate')} />
-          <Button label="Re-record phrase (Player 1)" variant="secondary" onPress={confirmBackToPhrase} />
-        </>
+    <Screen
+      eyebrow="Hand it over"
+      title="Here it is, backwards."
+      footer={
+        ready ? (
+          <>
+            <Button label="I'm Player 2 — record my try" icon="arrow-right" onPress={() => router.push('/imitate')} />
+            <Button label="Re-record phrase (Player 1)" variant="secondary" onPress={confirmBackToPhrase} />
+          </>
+        ) : null
+      }>
+      <WavePlayer uri={ready ? reversal.revUri : null} label="Play backwards" />
+      {ready ? (
+        <Txt variant="body">Listen, then hand the phone to Player 2. Don&apos;t show them the phrase.</Txt>
+      ) : (
+        <Notice text="Flipping it backwards…" />
       )}
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  body: { fontSize: 18, lineHeight: 26 },
-});

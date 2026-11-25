@@ -1,21 +1,26 @@
+import Feather from '@expo/vector-icons/Feather';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
 import { track } from '@/analytics';
 import { PRIVACY_POLICY_URL } from '@/config';
 import type { ConsentRecord } from '@/game/consent';
 import { acceptConsent, readConsent } from '@/game/consentStore';
-import { Button } from '@/ui/Button';
+import { Button, type IconName } from '@/ui/Button';
 import { formatDate } from '@/ui/formatDate';
 import { Screen } from '@/ui/Screen';
+import { Txt } from '@/ui/Txt';
 import { useTheme } from '@/ui/theme';
 
-const POINTS = [
-  "Invertalk uses your microphone to record the phrase and your friend's imitation.",
-  'Everything is processed on this phone. Recordings are never uploaded.',
-  'Recordings are temporary and are deleted when the game ends.',
-  'We collect anonymous usage stats, like whether a game was finished. They never include your voice or the words you choose.',
+const POINTS: { icon: IconName; text: string }[] = [
+  { icon: 'mic', text: "Invertalk uses your microphone to record the phrase and your friend's imitation." },
+  { icon: 'smartphone', text: 'Everything is processed on this phone. Recordings are never uploaded.' },
+  { icon: 'trash-2', text: 'Recordings are temporary and are deleted when the game ends.' },
+  {
+    icon: 'bar-chart-2',
+    text: 'We collect anonymous usage stats, like whether a game was finished. They never include your voice or the words you choose.',
+  },
 ];
 
 export default function ConsentScreen() {
@@ -45,41 +50,42 @@ export default function ConsentScreen() {
   };
 
   return (
-    <Screen title="Before you record">
-      <View style={styles.points}>
-        {POINTS.map((point) => (
-          <View key={point} style={styles.point}>
-            <Text style={[styles.bullet, { color: t.text }]}>•</Text>
-            <Text style={[styles.text, { color: t.text }]}>{point}</Text>
+    <Screen
+      eyebrow="Before you record"
+      title="Your voice stays on this phone."
+      footer={
+        review ? (
+          <Button label="Close" onPress={() => router.back()} />
+        ) : (
+          <>
+            <Button label="I agree" onPress={onAgree} />
+            <Button label="Not now" variant="secondary" onPress={onDecline} />
+          </>
+        )
+      }>
+      <View style={[styles.card, { backgroundColor: t.surface, borderColor: t.border }]}>
+        {POINTS.map((point, i) => (
+          <View key={point.icon} style={[styles.point, i < POINTS.length - 1 && { borderBottomWidth: 1, borderBottomColor: t.border }]}>
+            <View style={[styles.icon, { backgroundColor: t.selectedBg }]}>
+              <Feather name={point.icon} size={18} color={t.text} />
+            </View>
+            <Txt variant="body" style={styles.text}>
+              {point.text}
+            </Txt>
           </View>
         ))}
       </View>
-      <Button label="Read the privacy policy" variant="secondary" onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)} />
-      {review ? (
-        <>
-          {record !== undefined && (
-            <Text style={[styles.text, { color: t.muted }]}>
-              {record
-                ? `You agreed on ${formatDate(record.acceptedAt)}.`
-                : "You haven't agreed yet."}
-            </Text>
-          )}
-          <Button label="Close" onPress={() => router.back()} />
-        </>
-      ) : (
-        <View style={styles.actions}>
-          <Button label="I agree" onPress={onAgree} />
-          <Button label="Not now" variant="secondary" onPress={onDecline} />
-        </View>
+      <Button label="Read the privacy policy" variant="quiet" icon="external-link" onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)} />
+      {review && record !== undefined && (
+        <Txt variant="muted">{record ? `You agreed on ${formatDate(record.acceptedAt)}.` : "You haven't agreed yet."}</Txt>
       )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  points: { gap: 14 },
-  point: { flexDirection: 'row', gap: 10 },
-  bullet: { fontSize: 18, lineHeight: 26 },
-  text: { flex: 1, fontSize: 18, lineHeight: 26 },
-  actions: { gap: 12, marginTop: 8 },
+  card: { borderRadius: 24, borderWidth: 1, paddingHorizontal: 16 },
+  point: { flexDirection: 'row', gap: 14, paddingVertical: 16 },
+  icon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  text: { flex: 1, fontSize: 16, lineHeight: 23 },
 });
